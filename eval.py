@@ -4,6 +4,8 @@ python eval.py --checkpoint data/image/pusht/diffusion_policy_cnn/train_0/checkp
 """
 
 import sys
+
+from diffusion_policy.env_runner.push2t_keypoints_runner import Push2TKeypointsRunner
 # use line-buffering for both stdout and stderr
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 sys.stderr = open(sys.stderr.fileno(), mode='w', buffering=1)
@@ -45,8 +47,11 @@ def main(checkpoint, output_dir, device):
     policy.eval()
     
     # run eval
+    print(str(cfg.task.env_runner))
+    cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.push2t_keypoints_runner.Push2TKeypointsRunner"
     env_runner = hydra.utils.instantiate(
         cfg.task.env_runner,
+        # Push2TKeypointsRunner(output_dir),
         output_dir=output_dir)
     runner_log = env_runner.run(policy)
     
