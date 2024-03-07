@@ -89,17 +89,20 @@ class Push2TKeypointsEnv(Push2TEnv):
             pose_map=obj_map, is_obj=True)
         # python dict guerentee order of keys and values
         kps = np.concatenate(list(kp_map.values()), axis=0)
-
+        print(">>> KPS SHAPE")
+        print(kps.shape)
         # select keypoints to drop
         n_kps = kps.shape[0]
-        visible_kps = self.np_random.random(size=(n_kps,)) < self.keypoint_visible_rate
+        # visible_kps = self.np_random.random(size=(n_kps,)) < self.keypoint_visible_rate
+        visible_kps = self.np_random.random(size=(n_kps,)) > -1 # Drop no keypoints
         kps_mask = np.repeat(visible_kps[:,None], 2, axis=1)
 
         # save keypoints for rendering
         vis_kps = kps.copy()
         vis_kps[~visible_kps] = 0
         draw_kp_map = {
-            'block': vis_kps[:len(kp_map['block'])]
+            'block': vis_kps[:len(kp_map['block'])],
+            'block2': vis_kps[:len(kp_map['block2'])]
         }
         if self.agent_keypoints:
             draw_kp_map['agent'] = vis_kps[len(kp_map['block']):]
@@ -122,6 +125,7 @@ class Push2TKeypointsEnv(Push2TEnv):
         obs = np.concatenate([
             obs, obs_mask.astype(obs.dtype)
         ], axis=0)
+        print(obs.shape)
         return obs
     
     

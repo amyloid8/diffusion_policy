@@ -198,6 +198,8 @@ class PushTKeypointsRunner(BaseLowdimRunner):
             done = False
             while not done:
                 Do = obs.shape[-1] // 2
+                print("DO = " + str(Do))
+                print("OBS SHAPe = " + str(obs.shape))
                 # create obs dict
                 np_obs_dict = {
                     # handle n_latency_steps by discarding the last n_latency_steps

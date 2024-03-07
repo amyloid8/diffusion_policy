@@ -94,7 +94,7 @@ class Push2TEnv(gym.Env):
             self.space.damping = self.damping
         
         # use legacy RandomState for compatibility
-        state = self.reset_to_state
+        state = None#self.reset_to_state
         if state is None:
             rs = np.random.RandomState(seed=seed)
             state = np.array([
@@ -107,6 +107,7 @@ class Push2TEnv(gym.Env):
         self._set_state(state)
 
         observation = self._get_obs()
+        print(f" reset state {observation.shape}")
         return observation
 
     def step(self, action):

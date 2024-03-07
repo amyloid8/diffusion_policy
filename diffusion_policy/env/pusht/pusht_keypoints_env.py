@@ -87,7 +87,6 @@ class PushTKeypointsEnv(PushTEnv):
             pose_map=obj_map, is_obj=True)
         # python dict guerentee order of keys and values
         kps = np.concatenate(list(kp_map.values()), axis=0)
-
         # select keypoints to drop
         n_kps = kps.shape[0]
         visible_kps = self.np_random.random(size=(n_kps,)) < self.keypoint_visible_rate

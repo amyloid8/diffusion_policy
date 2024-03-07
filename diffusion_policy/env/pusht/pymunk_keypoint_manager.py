@@ -123,7 +123,7 @@ class PymunkKeypointManager:
             obj_local_kps += small_shift
 
             local_keypoint_map[name] = obj_local_kps
-        
+        print(f"local keypoint map {local_keypoint_map}")
         return cls(local_keypoint_map=local_keypoint_map, **kwargs)
 
     @staticmethod

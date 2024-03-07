@@ -198,8 +198,8 @@ class Push2TKeypointsRunner(BaseLowdimRunner):
             done = False
             while not done:
                 Do = obs.shape[-1] // 2
-                print(str(Do))
-                print(obs.shape)
+                print("DO>>>" + str(Do))
+                print("OBS SHAPE = " + str(obs.shape))
                 
                 # create obs dict
                 np_obs_dict = {
@@ -218,6 +218,7 @@ class Push2TKeypointsRunner(BaseLowdimRunner):
                 obs_dict = dict_apply(np_obs_dict, 
                     lambda x: torch.from_numpy(x).to(
                         device=device))
+                print(len(obs_dict['obs']))
 
                 # run policy
                 with torch.no_grad():

@@ -104,6 +104,8 @@ class PushTEnv(gym.Env):
         self._set_state(state)
 
         observation = self._get_obs()
+        print(f" obs shape {observation.shape}")
+
         return observation
 
     def step(self, action):
