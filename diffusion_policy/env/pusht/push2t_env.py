@@ -107,7 +107,6 @@ class Push2TEnv(gym.Env):
         self._set_state(state)
 
         observation = self._get_obs()
-        print(f" reset state {observation.shape}")
         return observation
 
     def step(self, action):
@@ -133,8 +132,8 @@ class Push2TEnv(gym.Env):
         block_geom = pymunk_to_shapely(self.block, self.block.shapes)
         block_geom2 = pymunk_to_shapely(self.block2, self.block2.shapes)
 
-        intersection_area = (goal_geom.intersection(block_geom).area + goal_geom2.intersection(block_geom2).area)/2
-        goal_area = (goal_geom.area + goal_geom2.area)/2
+        intersection_area = goal_geom.intersection(block_geom).area
+        goal_area = (goal_geom.area)
         coverage = intersection_area / goal_area
         reward = np.clip(coverage / self.success_threshold, 0, 1)
         done = coverage > self.success_threshold
@@ -327,8 +326,8 @@ class Push2TEnv(gym.Env):
 
         # Add agent, block, and goal zone.
         self.agent = self.add_circle((256, 400), 15)
-        self.block = self.add_tee((256, 300), 0)
         self.block2 = self.add_tee((256, 300), 0)
+        self.block = self.add_tee((256, 300), 0)
         self.goal_color = pygame.Color('LightGreen')
         self.goal_pose = np.array([256,256,np.pi/4])  # x, y, theta (in radians)
         self.goal_pose2 = np.array([100,256,np.pi/4])  # x, y, theta (in radians)

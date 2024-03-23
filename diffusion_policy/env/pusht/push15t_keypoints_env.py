@@ -4,7 +4,7 @@ from diffusion_policy.env.pusht.push2t_env import Push2TEnv
 from diffusion_policy.env.pusht.pymunk_keypoint_manager import PymunkKeypointManager
 import numpy as np
 
-class Push2TKeypointsEnv(Push2TEnv):
+class Push15TKeypointsEnv(Push2TEnv):
     def __init__(self,
             legacy=False,
             block_cog=None, 
@@ -34,11 +34,11 @@ class Push2TKeypointsEnv(Push2TEnv):
 
         # create observation spaces
         Dblockkps = np.prod(local_keypoint_map['block'].shape)
-        Dblockkps2 = np.prod(local_keypoint_map['block2'].shape)
+        # Dblockkps2 = np.prod(local_keypoint_map['block2'].shape)
         Dagentkps = np.prod(local_keypoint_map['agent'].shape)
         Dagentpos = 2
 
-        Do = Dblockkps + Dblockkps2
+        Do = Dblockkps
         if agent_keypoints:
             # blockkp + agnet_pos
             Do += Dagentkps
@@ -80,7 +80,7 @@ class Push2TKeypointsEnv(Push2TEnv):
         # get keypoints
         obj_map = {
             'block': self.block,
-            'block2': self.block2
+            # 'block2': self.block2
         }
         if self.agent_keypoints:
             obj_map['agent'] = self.agent
@@ -100,10 +100,12 @@ class Push2TKeypointsEnv(Push2TEnv):
         vis_kps[~visible_kps] = 0
         draw_kp_map = {
             'block': vis_kps[:len(kp_map['block'])],
-            'block2': vis_kps[:len(kp_map['block2'])]
+            # 'block2': vis_kps[:len(kp_map['block2'])]
         }
         if self.agent_keypoints:
             draw_kp_map['agent'] = vis_kps[len(kp_map['block']):]
+            # draw_kp_map['agent'] = vis_kps[len(kp_map['block2']):]
+
         self.draw_kp_map = draw_kp_map
         
         # construct obs

@@ -1,10 +1,10 @@
 from typing import Dict, Sequence, Union, Optional
 from gym import spaces
-from diffusion_policy.env.pusht.push2t_env import Push2TEnv
+from diffusion_policy.env.pusht.pushobjects_env import PushObjectsEnv
 from diffusion_policy.env.pusht.pymunk_keypoint_manager import PymunkKeypointManager
 import numpy as np
 
-class Push2TKeypointsEnv(Push2TEnv):
+class PushObjectsKeypointsEnv(PushObjectsEnv):
     def __init__(self,
             legacy=False,
             block_cog=None, 
@@ -34,11 +34,9 @@ class Push2TKeypointsEnv(Push2TEnv):
 
         # create observation spaces
         Dblockkps = np.prod(local_keypoint_map['block'].shape)
-        Dblockkps2 = np.prod(local_keypoint_map['block2'].shape)
         Dagentkps = np.prod(local_keypoint_map['agent'].shape)
         Dagentpos = 2
-
-        Do = Dblockkps + Dblockkps2
+        Do = Dblockkps
         if agent_keypoints:
             # blockkp + agnet_pos
             Do += Dagentkps
@@ -71,22 +69,23 @@ class Push2TKeypointsEnv(Push2TEnv):
 
     @classmethod
     def genenerate_keypoint_manager_params(cls):
-        env = Push2TEnv()
-        kp_manager = PymunkKeypointManager.create_from_push2t_env(env)
+        env = PushObjectsEnv()
+        kp_manager = PymunkKeypointManager.create_from_pushobjects_env(env)
         kp_kwargs = kp_manager.kwargs
         return kp_kwargs
 
     def _get_obs(self):
         # get keypoints
         obj_map = {
-            'block': self.block,
-            'block2': self.block2
+            'block': self.blocks[self.active_idx]
         }
         if self.agent_keypoints:
             obj_map['agent'] = self.agent
 
         kp_map = self.kp_manager.get_keypoints_global(
             pose_map=obj_map, is_obj=True)
+        # kp_map['block'] = kp_map['block' + str(self.active_idx)]
+        # del kp_map['block' + str(self.active_idx)]
         # python dict guerentee order of keys and values
         kps = np.concatenate(list(kp_map.values()), axis=0)
         # select keypoints to drop
@@ -100,7 +99,7 @@ class Push2TKeypointsEnv(Push2TEnv):
         vis_kps[~visible_kps] = 0
         draw_kp_map = {
             'block': vis_kps[:len(kp_map['block'])],
-            'block2': vis_kps[:len(kp_map['block2'])]
+            # 'block2': vis_kps[:len(kp_map['block2'])]
         }
         if self.agent_keypoints:
             draw_kp_map['agent'] = vis_kps[len(kp_map['block']):]

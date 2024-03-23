@@ -1,4 +1,4 @@
-from diffusion_policy.env.pusht.push15t_keypoints_env import Push15TKeypointsEnv
+from diffusion_policy.env.pusht.pushobjects_keypoints_env import PushObjectsKeypointsEnv
 import wandb
 import numpy as np
 import torch
@@ -8,7 +8,7 @@ import tqdm
 import dill
 import math
 import wandb.sdk.data_types.video as wv
-from diffusion_policy.env.pusht.push2t_keypoints_env import Push2TKeypointsEnv
+from diffusion_policy.env.pusht.pusht_keypoints_env import PushTKeypointsEnv
 from diffusion_policy.gym_util.async_vector_env import AsyncVectorEnv
 # from diffusion_policy.gym_util.sync_vector_env import SyncVectorEnv
 from diffusion_policy.gym_util.multistep_wrapper import MultiStepWrapper
@@ -18,7 +18,7 @@ from diffusion_policy.policy.base_lowdim_policy import BaseLowdimPolicy
 from diffusion_policy.common.pytorch_util import dict_apply
 from diffusion_policy.env_runner.base_lowdim_runner import BaseLowdimRunner
 
-class Push2TKeypointsRunner(BaseLowdimRunner):
+class PushObjectsKeypointsRunner(BaseLowdimRunner):
     def __init__(self,
             output_dir,
             keypoint_visible_rate=1.0,
@@ -52,12 +52,12 @@ class Push2TKeypointsRunner(BaseLowdimRunner):
         env_n_action_steps = n_action_steps
 
         # assert n_obs_steps <= n_action_steps
-        kp_kwargs = Push2TKeypointsEnv.genenerate_keypoint_manager_params()
+        kp_kwargs = PushObjectsKeypointsEnv.genenerate_keypoint_manager_params()
 
         def env_fn():
             return MultiStepWrapper(
                 VideoRecordingWrapper(
-                    Push15TKeypointsEnv(
+                    PushObjectsKeypointsEnv(
                         legacy=legacy_test,
                         keypoint_visible_rate=keypoint_visible_rate,
                         agent_keypoints=agent_keypoints,
@@ -194,12 +194,11 @@ class Push2TKeypointsRunner(BaseLowdimRunner):
             past_action = None
             policy.reset()
 
-            pbar = tqdm.tqdm(total=self.max_steps, desc=f"Eval Push2tKeypointsRunner {chunk_idx+1}/{n_chunks}", 
+            pbar = tqdm.tqdm(total=self.max_steps, desc=f"Eval PushObjectsKeypointsRunner {chunk_idx+1}/{n_chunks}", 
                 leave=False, mininterval=self.tqdm_interval_sec)
             done = False
             while not done:
                 Do = obs.shape[-1] // 2
-                
                 # create obs dict
                 np_obs_dict = {
                     # handle n_latency_steps by discarding the last n_latency_steps
