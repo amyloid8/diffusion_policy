@@ -288,25 +288,25 @@ class Push2TEnv(gym.Env):
         # Run physics to take effect
         self.space.step(1.0 / self.sim_hz)
     
-    def _set_state_local(self, state_local):
-        agent_pos_local = state_local[:2]
-        block_pose_local = state_local[2:]
-        tf_img_obj = st.AffineTransform(
-            translation=self.goal_pose[:2], 
-            rotation=self.goal_pose[2])
-        tf_obj_new = st.AffineTransform(
-            translation=block_pose_local[:2],
-            rotation=block_pose_local[2]
-        )
-        tf_img_new = st.AffineTransform(
-            matrix=tf_img_obj.params @ tf_obj_new.params
-        )
-        agent_pos_new = tf_img_new(agent_pos_local)
-        new_state = np.array(
-            list(agent_pos_new[0]) + list(tf_img_new.translation) \
-                + [tf_img_new.rotation])
-        self._set_state(new_state)
-        return new_state
+    # def _set_state_local(self, state_local):
+    #     agent_pos_local = state_local[:2]
+    #     block_pose_local = state_local[2:]
+    #     tf_img_obj = st.AffineTransform(
+    #         translation=self.goal_pose[:2], 
+    #         rotation=self.goal_pose[2])
+    #     tf_obj_new = st.AffineTransform(
+    #         translation=block_pose_local[:2],
+    #         rotation=block_pose_local[2]
+    #     )
+    #     tf_img_new = st.AffineTransform(
+    #         matrix=tf_img_obj.params @ tf_obj_new.params
+    #     )
+    #     agent_pos_new = tf_img_new(agent_pos_local)
+    #     new_state = np.array(
+    #         list(agent_pos_new[0]) + list(tf_img_new.translation) \
+    #             + [tf_img_new.rotation])
+    #     self._set_state(new_state)
+    #     return new_state
 
     def _setup(self):
         self.space = pymunk.Space()
@@ -327,7 +327,7 @@ class Push2TEnv(gym.Env):
         # Add agent, block, and goal zone.
         self.agent = self.add_circle((256, 400), 15)
         self.block2 = self.add_tee((256, 300), 0)
-        self.block = self.add_tee((256, 300), 0)
+        self.block = self.add_tee((300, 350), 0)
         self.goal_color = pygame.Color('LightGreen')
         self.goal_pose = np.array([256,256,np.pi/4])  # x, y, theta (in radians)
         self.goal_pose2 = np.array([100,256,np.pi/4])  # x, y, theta (in radians)

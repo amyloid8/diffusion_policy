@@ -34,7 +34,7 @@ class Push15TKeypointsEnv(Push2TEnv):
 
         # create observation spaces
         Dblockkps = np.prod(local_keypoint_map['block'].shape)
-        # Dblockkps2 = np.prod(local_keypoint_map['block2'].shape)
+        # Dblockkps = np.prod(local_keypoint_map['block2'].shape)
         Dagentkps = np.prod(local_keypoint_map['agent'].shape)
         Dagentpos = 2
 

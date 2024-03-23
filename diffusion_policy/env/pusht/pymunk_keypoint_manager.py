@@ -90,17 +90,17 @@ class PymunkKeypointManager:
     def create_from_push2t_env(cls, env, n_block_kps=9, n_agent_kps=3, seed=0, **kwargs):
         rng = np.random.default_rng(seed=seed)
         local_keypoint_map = dict()
-        for name in ['block','block2','agent']:
+        for name in ['block','agent']:
             self = env
             self.space = pymunk.Space()
             if name == 'agent':
                 self.agent = obj = self.add_circle((256, 400), 15)
                 n_kps = n_agent_kps
-            elif name == 'block':
-                self.block = obj = self.add_tee((256, 300), 0)
+            elif name == 'block2':
+                self.block2 = obj = self.add_tee((256, 300), 0)
                 n_kps = n_block_kps
             else:
-                self.block2 = obj = self.add_tee((256, 300), 0)
+                self.block = obj = self.add_tee((300, 350), 0)
                 n_kps = n_block_kps
             self.screen = pygame.Surface((512,512))
             self.screen.fill(pygame.Color("white"))
@@ -128,20 +128,17 @@ class PymunkKeypointManager:
     def create_from_pushobjects_env(cls, env, n_block_kps=9, n_agent_kps=3, seed=0, **kwargs):
         rng = np.random.default_rng(seed=seed)
         local_keypoint_map = dict()
-        for name in ['agent'] + [('block', i) for i in range(env.n_blocks)]:
+        for name in ['agent', 'block']:
             self = env
             self.space = pymunk.Space()
             if name == 'agent':
                 self.agent = obj = self.add_circle((256, 400), 15)
                 n_kps = n_agent_kps
             else:
-                if not hasattr(self, 'blocks'):
-                    self.blocks = []
-                self.blocks += [self.add_tee((256, 300), 0)]
-                obj = self.blocks[name[1]]
+                self.blocks = [self.add_tee((256, 300), 0)]
+                obj = self.blocks[0]
+                self.active_idx=0
                 n_kps = n_block_kps
-                name = self.get_name(name[1])
-            self.active_idx = 0
 
             self.screen = pygame.Surface((512,512))
             self.screen.fill(pygame.Color("white"))

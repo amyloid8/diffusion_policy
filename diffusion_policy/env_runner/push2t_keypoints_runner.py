@@ -52,7 +52,7 @@ class Push2TKeypointsRunner(BaseLowdimRunner):
         env_n_action_steps = n_action_steps
 
         # assert n_obs_steps <= n_action_steps
-        kp_kwargs = Push2TKeypointsEnv.genenerate_keypoint_manager_params()
+        kp_kwargs = Push15TKeypointsEnv.genenerate_keypoint_manager_params()
 
         def env_fn():
             return MultiStepWrapper(
