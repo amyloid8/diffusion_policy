@@ -1,4 +1,5 @@
 from typing import Dict, Sequence, Union, Optional
+from diffusion_policy.env.pusht.pusht_env import PushTEnv
 from gym import spaces
 from diffusion_policy.env.pusht.pushobjects_env import PushObjectsEnv
 from diffusion_policy.env.pusht.pymunk_keypoint_manager import PymunkKeypointManager
@@ -69,8 +70,8 @@ class PushObjectsKeypointsEnv(PushObjectsEnv):
 
     @classmethod
     def genenerate_keypoint_manager_params(cls):
-        env = PushObjectsEnv()
-        kp_manager = PymunkKeypointManager.create_from_pushobjects_env(env)
+        env = PushTEnv()
+        kp_manager = PymunkKeypointManager.create_from_pusht_env(env)
         kp_kwargs = kp_manager.kwargs
         return kp_kwargs
 
