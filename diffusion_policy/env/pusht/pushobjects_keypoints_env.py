@@ -84,7 +84,7 @@ class PushObjectsKeypointsEnv(PushObjectsEnv):
             obj_map['agent'] = self.agent
 
         kp_map = self.kp_manager.get_keypoints_global(
-            pose_map=obj_map, is_obj=True)
+            pose_map=obj_map, is_obj=True, inverse_transform=self.inverse_transform)
         # kp_map['block'] = kp_map['block' + str(self.active_idx)]
         # del kp_map['block' + str(self.active_idx)]
         # python dict guerentee order of keys and values
@@ -111,7 +111,7 @@ class PushObjectsKeypointsEnv(PushObjectsEnv):
         obs_mask = kps_mask.flatten()
         if not self.agent_keypoints:
             # passing agent position when keypoints are not available
-            agent_pos = np.array(self.agent.position)
+            agent_pos = np.array(self.inverse_transform(self.agent.position))
             obs = np.concatenate([
                 obs, agent_pos
             ])

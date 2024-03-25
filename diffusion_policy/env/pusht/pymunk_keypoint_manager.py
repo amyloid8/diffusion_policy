@@ -163,27 +163,28 @@ class PymunkKeypointManager:
         return cls(local_keypoint_map=local_keypoint_map, **kwargs)
 
     @staticmethod
-    def get_tf_img(pose: Sequence):
-        pos = pose[:2]
+    def get_tf_img(pose: Sequence, inverse_transform=None):
+        pos = pose[:2] if inverse_transform is None else inverse_transform(pose[:2])
         rot = pose[2]
         tf_img_obj = st.AffineTransform(
             translation=pos, rotation=rot)
         return tf_img_obj
 
     @classmethod
-    def get_tf_img_obj(cls, obj: pymunk.Body):
+    def get_tf_img_obj(cls, obj: pymunk.Body, inverse_transform=None):
         pose = tuple(obj.position) + (obj.angle,)
-        return cls.get_tf_img(pose)
+        return cls.get_tf_img(pose, inverse_transform=inverse_transform)
 
     def get_keypoints_global(self, 
             pose_map: Dict[set, Union[Sequence, pymunk.Body]], 
-            is_obj=False):
+            is_obj=False,
+            inverse_transform=None):
         kp_map = dict()
         for key, value in pose_map.items():
             if is_obj:
-                tf_img_obj = self.get_tf_img_obj(value)
+                tf_img_obj = self.get_tf_img_obj(value, inverse_transform=inverse_transform)
             else:
-                tf_img_obj = self.get_tf_img(value)
+                tf_img_obj = self.get_tf_img(value, inverse_transform=inverse_transform)
             kp_local = self.local_keypoint_map[key]
             kp_global = tf_img_obj(kp_local)
             kp_map[key] = kp_global

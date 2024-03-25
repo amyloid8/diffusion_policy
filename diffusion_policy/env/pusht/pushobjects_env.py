@@ -89,6 +89,12 @@ class PushObjectsEnv(gym.Env):
             return "block"
         else:
             return "block" + str(i)
+        
+    def transform(self, position):
+        return position + (self.goal_poses[self.active_idx][0:2] - self.base_goal_pose[0:2])
+
+    def inverse_transform(self, position):
+        return position - (self.goal_poses[self.active_idx][0:2] - self.base_goal_pose[0:2])
 
     def reset(self):
         seed = self._seed
@@ -120,10 +126,11 @@ class PushObjectsEnv(gym.Env):
         self.n_contact_points = 0
         n_steps = self.sim_hz // self.control_hz
         if action is not None:
+            action = self.transform(action)
             self.latest_action = action
             for i in range(n_steps):
                 # Step PD control.
-                # self.agent.velocity = self.k_p * (act - self.agent.position)    # P control works too.
+                # self.agent.velocity = self.k_p * (act - self.agent.position) # P control works too.
                 acceleration = self.k_p * (action - self.agent.position) + self.k_v * (Vec2d(0, 0) - self.agent.velocity)
                 self.agent.velocity += acceleration * dt
 
@@ -131,7 +138,7 @@ class PushObjectsEnv(gym.Env):
                 self.space.step(dt)
 
         # compute reward
-        goal_body = self._get_goal_pose_body(self.goal_pose)
+        goal_body = self._get_goal_pose_body(self.goal_poses[self.active_idx])
         goal_geom = pymunk_to_shapely(goal_body, self.blocks[self.active_idx].shapes)
         block_geom = pymunk_to_shapely(self.blocks[self.active_idx], self.blocks[self.active_idx].shapes)
 
@@ -140,7 +147,10 @@ class PushObjectsEnv(gym.Env):
         coverage = intersection_area / goal_area
         reward = np.clip(coverage / self.success_threshold, 0, 1)
         done = coverage > self.success_threshold
-
+        #switch to idx 1 if idx 0 is done
+        if done and self.active_idx == 0:
+            self.active_idx = 1
+            done = False
         observation = self._get_obs()
         info = self._get_info()
 
@@ -162,8 +172,8 @@ class PushObjectsEnv(gym.Env):
 
     def _get_obs(self):
         obs = np.array(
-            tuple(self.agent.position) \
-            + tuple(self.blocks[self.active_idx].position) \
+            tuple(self.inverse_transform(self.agent.position)) \
+            + tuple(self.inverse_transform(self.blocks[self.active_idx].position)) \
             + (self.blocks[self.active_idx].angle % (2 * np.pi),))
         return obs
 
@@ -184,7 +194,7 @@ class PushObjectsEnv(gym.Env):
             'pos_agent': np.array(self.agent.position),
             'vel_agent': np.array(self.agent.velocity),
             'block_pose': np.array(list(self.blocks[self.active_idx].position) + [self.blocks[self.active_idx].angle]),
-            'goal_pose': self.goal_pose,
+            'goal_pose': self.goal_poses[self.active_idx],
             'n_contacts': n_contact_points_per_step}
         return info
 
@@ -204,11 +214,12 @@ class PushObjectsEnv(gym.Env):
         draw_options = DrawOptions(canvas)
 
         # Draw goal pose.
-        goal_body = self._get_goal_pose_body(self.goal_pose)
-        for shape in self.blocks[self.active_idx].shapes:
-            goal_points = [pymunk.pygame_util.to_pygame(goal_body.local_to_world(v), draw_options.surface) for v in shape.get_vertices()]
-            goal_points += [goal_points[0]]
-            pygame.draw.polygon(canvas, self.goal_color, goal_points)
+        for i in range(self.n_blocks):
+            goal_body = self._get_goal_pose_body(self.goal_poses[i])
+            for shape in self.blocks[i].shapes:
+                goal_points = [pymunk.pygame_util.to_pygame(goal_body.local_to_world(v), draw_options.surface) for v in shape.get_vertices()]
+                goal_points += [goal_points[0]]
+                pygame.draw.polygon(canvas, self.goal_color, goal_points)
 
         # Draw agent and block.
         self.space.debug_draw(draw_options)
@@ -282,8 +293,8 @@ class PushObjectsEnv(gym.Env):
         agent_pos_local = state_local[:2]
         block_pose_local = state_local[2:]
         tf_img_obj = st.AffineTransform(
-            translation=self.goal_pose[:2], 
-            rotation=self.goal_pose[2])
+            translation=self.goal_poses[self.active_idx][:2], 
+            rotation=self.goal_poses[self.active_idx][2])
         tf_obj_new = st.AffineTransform(
             translation=block_pose_local[:2],
             rotation=block_pose_local[2]
@@ -319,7 +330,8 @@ class PushObjectsEnv(gym.Env):
         self.blocks = [self.add_tee((256, 300), 0)]
         self.blocks += [self.add_tee((256, 300), 0)]
         self.goal_color = pygame.Color('LightGreen')
-        self.goal_pose = np.array([256,256,np.pi/4]) # x, y, theta (in radians)
+        self.goal_poses = [np.array([300,350,np.pi/4]), np.array([250,200,np.pi/4])] # x, y, theta (in radians)
+        self.base_goal_pose = np.array([256,256,np.pi/4])
 
         self.n_blocks = len(self.blocks)
         self.active_idx = 0
@@ -332,7 +344,7 @@ class PushObjectsEnv(gym.Env):
         self.n_contact_points = 0
 
         self.max_score = 50 * 100
-        self.success_threshold = 0.90    # 95% coverage.
+        self.success_threshold = 0.70    # 95% coverage.
 
     def _add_segment(self, a, b, radius):
         shape = pymunk.Segment(self.space.static_body, a, b, radius)
