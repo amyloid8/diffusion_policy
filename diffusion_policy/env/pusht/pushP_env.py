@@ -25,7 +25,7 @@ def pymunk_to_shapely(body, shapes):
     geom = sg.MultiPolygon(geoms)
     return geom
 
-class PushTEnv(gym.Env):
+class PushPEnv(gym.Env):
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": 10}
     reward_range = (0., 1.)
 
@@ -305,8 +305,7 @@ class PushTEnv(gym.Env):
 
         # Add agent, block, and goal zone.
         self.agent = self.add_circle((256, 400), 15)
-        self.block = self.add_tee((256, 300), 0)
-        # self.block = self.add_circle((256, 300), 3)
+        self.block = self.add_pee((256, 300), 0)
         self.goal_color = pygame.Color('LightGreen')
         self.goal_pose = np.array([256,256,np.pi/4])  # x, y, theta (in radians)
 
@@ -354,7 +353,7 @@ class PushTEnv(gym.Env):
                                  (-scale/2, length*scale),
                                  ( scale/2, length*scale),
                                  ( scale/2, scale)]
-        inertia2 = pymunk.moment_for_poly(mass, vertices=vertices2)
+        inertia2 = pymunk.moment_for_poly(mass, vertices=vertices1)
         body = pymunk.Body(mass, inertia1 + inertia2)
         shape1 = pymunk.Poly(body, vertices1)
         shape2 = pymunk.Poly(body, vertices2)
@@ -368,7 +367,7 @@ class PushTEnv(gym.Env):
         body.friction = 1
         self.space.add(body, shape1, shape2)
         return body
-
+    
     def add_pee(self, position, angle, scale=30, color='LightSlateGray', mask=pymunk.ShapeFilter.ALL_MASKS()):
         mass = 1
         length = 4
