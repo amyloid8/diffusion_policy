@@ -72,7 +72,7 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
     @classmethod
     def genenerate_keypoint_manager_params(cls):
         env = PushTEnv()
-        kp_manager = PymunkKeypointManager.create_from_pusht_env(env)
+        kp_manager = PymunkKeypointManager.create_from_pusht_env(env, rel=True)
         kp_kwargs = kp_manager.kwargs
         return kp_kwargs
 
