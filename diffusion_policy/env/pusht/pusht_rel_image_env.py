@@ -34,10 +34,10 @@ class PushTImageEnv(PushTRelativeEnv):
         })
         self.render_cache = None
     
-    def _get_obs(self):
-        img = super()._render_frame(mode='rgb_array')
+    def _get_obs(self, translate=True):
+        img = super()._render_frame(mode='rgb_array', translate=translate)
 
-        agent_pos = np.array(self.agent.position)
+        agent_pos = np.array((0,0))
         img_obs = np.moveaxis(img.astype(np.float32) / 255, -1, 0)
         
         obs = {
@@ -45,9 +45,10 @@ class PushTImageEnv(PushTRelativeEnv):
             'agent_pos': agent_pos
         }
 
+        offset = np.array((0,0)) if translate else np.array(self.agent.position)
         # draw action
         if self.latest_action is not None:
-            action = np.array(self.latest_action + self.agent.position)
+            action = np.array(self.latest_action + offset)
             coord = (action / 512 * 96).astype(np.int32)
             marker_size = int(8/96*self.render_size)
             thickness = int(1/96*self.render_size)
@@ -61,7 +62,7 @@ class PushTImageEnv(PushTRelativeEnv):
     def render(self, mode):
         assert mode == 'rgb_array'
 
-        if self.render_cache is None:
-            self._get_obs()
+        # if self.render_cache is None:
+        #     self._get_obs()
         
-        return self.render_cache
+        return self._get_obs(translate=False)

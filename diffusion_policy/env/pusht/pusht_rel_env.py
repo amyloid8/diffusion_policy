@@ -154,7 +154,7 @@ class PushTRelativeEnv(gym.Env):
 
     def _get_obs(self):
         obs = np.array(
-            tuple(self.agent.position) \
+            (0,0) \
             + tuple(self.block.position - self.agent.position) \
             + (self.block.angle % (2 * np.pi),))
         return obs
@@ -180,7 +180,7 @@ class PushTRelativeEnv(gym.Env):
             'n_contacts': n_contact_points_per_step}
         return info
 
-    def _render_frame(self, mode, translate=False):
+    def _render_frame(self, mode, relative=False):
 
         if self.window is None and mode == "human":
             pygame.init()
@@ -194,17 +194,20 @@ class PushTRelativeEnv(gym.Env):
         self.screen = canvas
 
         draw_options = DrawOptions(canvas)
-        offset = np.array(-self.agent.position) if translate else np.array((0,0))
+        offset = np.array(-self.agent.position) if relative else np.array((0,0))
         # Draw goal pose.
-        goal_body = self._get_goal_pose_body(self.goal_pose)
+        goal_body = self._get_goal_pose_body(self.goal_pose + offset)
         for shape in self.block.shapes:
             goal_points = [pymunk.pygame_util.to_pygame(goal_body.local_to_world(v), draw_options.surface) for v in shape.get_vertices()]
             goal_points += [goal_points[0]]
             pygame.draw.polygon(canvas, self.goal_color, goal_points)
 
         # Draw agent and block.
+        self.block.position += offset
+        self.agent.position += offset
         self.space.debug_draw(draw_options)
-
+        self.block.position -= offset
+        self.agent.position -= offset
         if mode == "human":
             # The following line copies our drawings from `canvas` to the visible window
             self.window.blit(canvas, canvas.get_rect())
