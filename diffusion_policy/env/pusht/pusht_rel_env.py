@@ -51,7 +51,7 @@ class PushTRelativeEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=np.array([0,0,0,0,0,0], dtype=np.float64),
             high=np.array([ws,ws,np.pi*2,ws,ws,np.pi*2], dtype=np.float64),
-            shape=(5,),
+            shape=(6,),
             dtype=np.float64
         )
 
