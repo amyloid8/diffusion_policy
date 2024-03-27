@@ -149,7 +149,9 @@ class PushTRelativeEnv(gym.Env):
             if self.teleop or (mouse_position - self.agent.position).length < 30:
                 self.teleop = True
                 act = mouse_position
-            return act
+            if act is not None:
+                return act - self.agent.position
+            return None
         return TeleopAgent(act)
 
     def _get_obs(self):
@@ -203,8 +205,6 @@ class PushTRelativeEnv(gym.Env):
             pygame.draw.polygon(canvas, self.goal_color, goal_points)
 
         # Draw agent and block.
-        self.block.position += offset[:2]
-        self.agent.position += offset[:2]
         self.space.debug_draw(draw_options)
         
         if mode == "human":
@@ -219,8 +219,6 @@ class PushTRelativeEnv(gym.Env):
         img = np.transpose(
                 np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
             )
-        self.block.position -= offset[:2]
-        self.agent.position -= offset[:2]
         img = cv2.resize(img, (self.render_size, self.render_size))
         if self.render_action:
             if self.render_action and (self.latest_action is not None):

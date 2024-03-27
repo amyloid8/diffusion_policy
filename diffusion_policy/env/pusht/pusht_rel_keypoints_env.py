@@ -1,10 +1,11 @@
 from typing import Dict, Sequence, Union, Optional
 from gym import spaces
+from diffusion_policy.env.pusht.pusht_rel_env import PushTRelativeEnv
 from diffusion_policy.env.pusht.pusht_env import PushTEnv
 from diffusion_policy.env.pusht.pymunk_keypoint_manager import PymunkKeypointManager
 import numpy as np
 
-class PushTRelKeypointsEnv(PushTEnv):
+class PushTRelKeypointsEnv(PushTRelativeEnv):
     def __init__(self,
             legacy=False,
             block_cog=None, 
