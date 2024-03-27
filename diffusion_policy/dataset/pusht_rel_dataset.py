@@ -9,7 +9,7 @@ from diffusion_policy.common.sampler import (
 from diffusion_policy.model.common.normalizer import LinearNormalizer
 from diffusion_policy.dataset.base_dataset import BaseLowdimDataset
 
-class PushTLowdimDataset(BaseLowdimDataset):
+class PushTRelLowdimDataset(BaseLowdimDataset):
     def __init__(self, 
             zarr_path, 
             horizon=1,
