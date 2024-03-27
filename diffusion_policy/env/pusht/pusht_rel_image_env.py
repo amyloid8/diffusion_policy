@@ -3,7 +3,7 @@ from gym import spaces
 import numpy as np
 import cv2
 
-class PushTImageEnv(PushTRelativeEnv):
+class PushTRelImageEnv(PushTRelativeEnv):
     metadata = {"render.modes": ["rgb_array"], "video.frames_per_second": 10}
 
     def __init__(self,
@@ -35,7 +35,7 @@ class PushTImageEnv(PushTRelativeEnv):
         self.render_cache = None
     
     def _get_obs(self, translate=True):
-        img = super()._render_frame(mode='rgb_array', translate=translate)
+        img = super()._render_frame(mode='rgb_array', relative=translate)
 
         agent_pos = np.array((0,0))
         img_obs = np.moveaxis(img.astype(np.float32) / 255, -1, 0)
@@ -62,7 +62,8 @@ class PushTImageEnv(PushTRelativeEnv):
     def render(self, mode):
         assert mode == 'rgb_array'
 
-        # if self.render_cache is None:
-        #     self._get_obs()
+        if self.render_cache is None:
+            self._get_obs()
         
-        return self._get_obs(translate=False)
+        return self.render_cache
+        # return self._get_obs(translate=False)

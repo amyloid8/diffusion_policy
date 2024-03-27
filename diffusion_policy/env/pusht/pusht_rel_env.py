@@ -194,7 +194,7 @@ class PushTRelativeEnv(gym.Env):
         self.screen = canvas
 
         draw_options = DrawOptions(canvas)
-        offset = np.array(-self.agent.position) if relative else np.array((0,0))
+        offset = np.array((-self.agent.position[0], -self.agent.position[1], 0)) if relative else np.array((0,0,0))
         # Draw goal pose.
         goal_body = self._get_goal_pose_body(self.goal_pose + offset)
         for shape in self.block.shapes:
@@ -203,11 +203,10 @@ class PushTRelativeEnv(gym.Env):
             pygame.draw.polygon(canvas, self.goal_color, goal_points)
 
         # Draw agent and block.
-        self.block.position += offset
-        self.agent.position += offset
+        self.block.position += offset[:2]
+        self.agent.position += offset[:2]
         self.space.debug_draw(draw_options)
-        self.block.position -= offset
-        self.agent.position -= offset
+        
         if mode == "human":
             # The following line copies our drawings from `canvas` to the visible window
             self.window.blit(canvas, canvas.get_rect())
@@ -220,6 +219,8 @@ class PushTRelativeEnv(gym.Env):
         img = np.transpose(
                 np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
             )
+        self.block.position -= offset[:2]
+        self.agent.position -= offset[:2]
         img = cv2.resize(img, (self.render_size, self.render_size))
         if self.render_action:
             if self.render_action and (self.latest_action is not None):
@@ -310,7 +311,7 @@ class PushTRelativeEnv(gym.Env):
         self.agent = self.add_circle((256, 400), 15)
         self.block = self.add_tee((256, 300), 0)
         self.goal_color = pygame.Color('LightGreen')
-        self.goal_pose = np.array([150,256,np.pi/4])  # x, y, theta (in radians)
+        self.goal_pose = np.array([256,256,np.pi/4])  # x, y, theta (in radians)
 
         # Add collision handling
         self.collision_handeler = self.space.add_collision_handler(0, 0)
