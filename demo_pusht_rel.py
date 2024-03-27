@@ -97,10 +97,12 @@ def main(output, render_size, control_hz):
                     'action': np.float32(act),
                     'n_contacts': np.float32([info['n_contacts']])
                 }
+                print(data)
                 episode.append(data)
                 
             # step env and render
             obs, reward, done, info = env.step(act)
+            print(obs)
             img = env.render(mode='human')
             
             # regulate control frequency
