@@ -252,10 +252,8 @@ class PushTRelativeEnv(gym.Env):
     def _set_state(self, state):
         if isinstance(state, np.ndarray):
             state = state.tolist()
-        pos_agent = state[:2]
-        pos_block = state[2:4]
-        rot_block = state[4]
-        self.agent.position = pos_agent
+        pos_block = state[0:2]
+        rot_block = state[2]
         # setting angle rotates with respect to center of mass
         # therefore will modify the geometric position
         # if not the same as CoM
