@@ -47,10 +47,10 @@ class PushTRelativeEnv(gym.Env):
         # legcay set_state for data compatibility
         self.legacy = legacy
 
-        # agent_pos, block_pos, block_angle
+        # block_pose, goal_pose
         self.observation_space = spaces.Box(
-            low=np.array([0,0,0,0,0], dtype=np.float64),
-            high=np.array([ws,ws,ws,ws,np.pi*2], dtype=np.float64),
+            low=np.array([0,0,0,0,0,0], dtype=np.float64),
+            high=np.array([ws,ws,np.pi*2,ws,ws,np.pi*2], dtype=np.float64),
             shape=(5,),
             dtype=np.float64
         )
@@ -97,7 +97,8 @@ class PushTRelativeEnv(gym.Env):
         if state is None:
             rs = np.random.RandomState(seed=seed)
             state = np.array([
-                rs.randint(50, 450), rs.randint(50, 450),
+                rs.randint(100, 400), rs.randint(100, 400),
+                rs.randn() * 2 * np.pi - np.pi,
                 rs.randint(100, 400), rs.randint(100, 400),
                 rs.randn() * 2 * np.pi - np.pi
                 ])
@@ -156,9 +157,10 @@ class PushTRelativeEnv(gym.Env):
 
     def _get_obs(self):
         obs = np.array(
-            (0,0) \
-            + tuple(self.block.position - self.agent.position) \
-            + (self.block.angle % (2 * np.pi),))
+            tuple(self.block.position - self.agent.position) \
+            + (self.block.angle % (2 * np.pi),) \
+            + tuple(self.goal_pose.position - self.agent.position) \
+            + (self.goal_pose.angle % (2 * np.pi),)) 
         return obs
 
     def _get_goal_pose_body(self, pose):

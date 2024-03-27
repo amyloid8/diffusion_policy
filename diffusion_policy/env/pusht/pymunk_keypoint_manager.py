@@ -50,7 +50,7 @@ class PymunkKeypointManager:
         }
 
     @classmethod
-    def create_from_pusht_env(cls, env, n_block_kps=9, n_agent_kps=3, seed=0, **kwargs):
+    def create_from_pusht_env(cls, env, n_block_kps=9, n_agent_kps=3, seed=0, rel=False, **kwargs):
         rng = np.random.default_rng(seed=seed)
         local_keypoint_map = dict()
         for name in ['block','agent']:
@@ -83,6 +83,8 @@ class PymunkKeypointManager:
             obj_local_kps += small_shift
 
             local_keypoint_map[name] = obj_local_kps
+            if rel and name == "block":
+                local_keypoint_map["goal"] = obj_local_kps
         
         return cls(local_keypoint_map=local_keypoint_map, **kwargs)
     
@@ -181,7 +183,7 @@ class PymunkKeypointManager:
             inverse_transform=None):
         kp_map = dict()
         for key, value in pose_map.items():
-            if is_obj:
+            if is_obj and key != 'goal':
                 tf_img_obj = self.get_tf_img_obj(value, inverse_transform=inverse_transform)
             else:
                 tf_img_obj = self.get_tf_img(value, inverse_transform=inverse_transform)

@@ -79,7 +79,8 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
     def _get_obs(self):
         # get keypoints
         obj_map = {
-            'block': self.block
+            'block': self.block,
+            'goal': self.goal_pose
         }
         if self.agent_keypoints:
             obj_map['agent'] = self.agent
@@ -100,7 +101,7 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
             'block': vis_kps[:len(kp_map['block'])]
         }
         if self.agent_keypoints:
-            draw_kp_map['agent'] = vis_kps[len(kp_map['block']):]
+            draw_kp_map['goal'] = vis_kps[len(kp_map['block']):]
         self.draw_kp_map = draw_kp_map
         
         # construct obs
