@@ -35,17 +35,17 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
 
         # create observation spaces
         Dblockkps = np.prod(local_keypoint_map['block'].shape)
-        Dagentkps = np.prod(local_keypoint_map['agent'].shape)
+        # Dagentkps = np.prod(local_keypoint_map['agent'].shape)
         Dagentpos = 2
 
-        Do = Dblockkps
-        if agent_keypoints:
-            # blockkp + agnet_pos
-            Do += Dagentkps
-        else:
-            # blockkp + agnet_kp
-            Do += Dagentpos
-        # obs + obs_mask
+        Do = Dblockkps * 2
+        # if agent_keypoints:
+        #     # blockkp + agnet_pos
+        #     Do += Dagentkps
+        # else:
+        #     # blockkp + agnet_kp
+        #     Do += Dagentpos
+        # # obs + obs_mask
         Dobs = Do * 2
 
         low = np.zeros((Dobs,), dtype=np.float64)
@@ -82,8 +82,8 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
             'block': self.block,
             'goal': self.goal_pose
         }
-        if self.agent_keypoints:
-            obj_map['agent'] = self.agent
+        # if self.agent_keypoints:
+        #     obj_map['agent'] = self.agent
 
         kp_map = self.kp_manager.get_keypoints_global(
             pose_map=obj_map, is_obj=True, inverse_transform=lambda x: x - self.agent.position)
@@ -107,15 +107,15 @@ class PushTRelKeypointsEnv(PushTRelativeEnv):
         # construct obs
         obs = kps.flatten()
         obs_mask = kps_mask.flatten()
-        if not self.agent_keypoints:
-            # passing agent position when keypoints are not available
-            agent_pos = np.array((0,0))#np.array(self.agent.position)
-            obs = np.concatenate([
-                obs, agent_pos
-            ])
-            obs_mask = np.concatenate([
-                obs_mask, np.ones((2,), dtype=bool)
-            ])
+        # if not self.agent_keypoints:
+        #     # passing agent position when keypoints are not available
+        #     agent_pos = np.array((0,0))#np.array(self.agent.position)
+        #     obs = np.concatenate([
+        #         obs, agent_pos
+        #     ])
+        #     obs_mask = np.concatenate([
+        #         obs_mask, np.ones((2,), dtype=bool)
+        #     ])
 
         # obs, obs_mask
         obs = np.concatenate([
