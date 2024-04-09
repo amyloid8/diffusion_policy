@@ -12,7 +12,7 @@ def main():
     action_key='action'
     print("Running...")
     
-    out_buffer = ReplayBuffer.create_from_path(out_path, mode='a')
+    out_buffer = ReplayBuffer.create_from_path(out_path, mode="w")
     
     replay_buffer = ReplayBuffer.copy_from_path(
             path, keys=[obs_key, state_key, action_key])
