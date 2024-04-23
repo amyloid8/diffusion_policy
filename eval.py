@@ -48,7 +48,7 @@ def main(checkpoint, output_dir, device):
     
     # run eval
     # cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.push2t_keypoints_runner.Push2TKeypointsRunner"
-    cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.pushobjects_keypoints_runner.PushObjectsKeypointsRunner"
+    # cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.pushobjects_keypoints_runner.PushObjectsKeypointsRunner"
     env_runner = hydra.utils.instantiate(
         cfg.task.env_runner,
         # Push2TKeypointsRunner(output_dir),
