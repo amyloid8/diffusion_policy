@@ -14,10 +14,12 @@ class TreeNode:
         self.policy = policy
         self.n_visited = 0
         self.reward = 0
+        self.reward_lb = 1
 
     def select(self):
         # reset state
         self.env._set_state(self.state)
+        g_max = 0
         if len(self.unexplored_choices) > 0:
             # we have not fully explored this node yet, so explore
             # choose a node to simulate first
@@ -29,15 +31,21 @@ class TreeNode:
             new_child = TreeNode(self.env, self.policy, self)
             # and play out the policy to see how it does
             reward = new_child.explore()
-            # backpropagate (using max instead of average)
             self.reward = max(self.reward, reward)
+            self.reward_lb = min(self.reward_lb, reward)
+            # backpropagate (using max instead of average)
             self.n_visited += 1
             return self.reward
         else:
-            #choose randomly, though we can (and should) do this smarter
-            sel_child = random.choice(self.children)
+            # return 1 if we have no options left and no children (terminal state)
+            if len(self.children) == 0:
+                return 1
+            
+            # choose child with highest UCT score 
+            sel_child = self.best_child()
             reward = sel_child.select()
             self.reward = max(self.reward, reward)
+            self.reward_lb = min(self.reward_lb, reward)
             self.n_visited += 1
             return self.reward
         
@@ -53,7 +61,20 @@ class TreeNode:
             iters += 1
         self.n_visited += 1
         self.reward = reward
+        self.reward_lb = reward
         return reward
+    
+    def best_child(self):
+        #find the child with the highest UCT score
+        out = None
+        reward = -1
+        for child in self.children:
+            #from MCTS paper
+            q_value = (child.reward - self.reward_lb) / (self.reward - self.reward_lb) + np.sqrt(np.log(self.n_visited)/child.n_visited)
+            if reward < q_value:
+                reward = q_value
+                out = child
+        return out
         
 
 
