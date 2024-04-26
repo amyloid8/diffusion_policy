@@ -19,7 +19,6 @@ class TreeNode:
     def select(self):
         # reset state
         self.env._set_state(self.state)
-        g_max = 0
         if len(self.unexplored_choices) > 0:
             # we have not fully explored this node yet, so explore
             # choose a node to simulate first

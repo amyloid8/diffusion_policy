@@ -127,6 +127,9 @@ class PushObjectsRelativeEnv(gym.Env):
         # compute reward
         reward, done = self.compute_reward(self.active_idx)
 
+        # if self.active_idx < self.n_blocks - 1 and done:
+        #     self.active_idx += 1
+        #     done = False
         observation = self._get_obs()
         info = self._get_info()
 
@@ -332,7 +335,7 @@ class PushObjectsRelativeEnv(gym.Env):
         for _ in range(self.n_blocks):
             self.blocks += [self.add_tee((256, 300), 0)]
         self.goal_color = pygame.Color('LightGreen')
-        self.goal_poses = [np.array([256,256,np.pi/4]), np.array([256,256,np.pi/4])]  # x, y, theta (in radians)
+        self.goal_poses = [np.array([256,256,np.pi/4]), np.array([356,256,np.pi/4])]  # x, y, theta (in radians)
 
         # Add collision handling
         self.collision_handeler = self.space.add_collision_handler(0, 0)
@@ -340,7 +343,7 @@ class PushObjectsRelativeEnv(gym.Env):
         self.n_contact_points = 0
 
         self.max_score = 50 * 100
-        self.success_threshold = 0.95    # 95% coverage.
+        self.success_threshold = 0.80    # 95% coverage.
 
     def _add_segment(self, a, b, radius):
         shape = pymunk.Segment(self.space.static_body, a, b, radius)

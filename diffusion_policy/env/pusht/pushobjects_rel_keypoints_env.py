@@ -5,7 +5,7 @@ from diffusion_policy.env.pusht.pusht_env import PushTEnv
 from diffusion_policy.env.pusht.pymunk_keypoint_manager import PymunkKeypointManager
 import numpy as np
 
-class PushTRelKeypointsEnv(PushObjectsRelativeEnv):
+class PushObjectsRelKeypointsEnv(PushObjectsRelativeEnv):
     def __init__(self,
             legacy=False,
             block_cog=None, 
