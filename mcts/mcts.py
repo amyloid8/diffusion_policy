@@ -5,7 +5,8 @@ import torch
 from diffusion_policy.common.pytorch_util import dict_apply
 
 class TreeNode:
-    def __init__(self, env, policy, parent):
+    def __init__(self, env, policy, parent, action=None):
+        self.action = action
         self.env = env
         self.state = env.state
         self.unexplored_choices = env.get_blocks_todo()
@@ -15,6 +16,9 @@ class TreeNode:
         self.n_visited = 0
         self.reward = 0
         self.reward_lb = 1
+
+    def reset_env(self):
+        self.env._set_state(self.state)
 
     def select(self):
         # reset state
@@ -27,7 +31,7 @@ class TreeNode:
             # simulate the choice
             simulate(self.env, choice, self.policy)
             # now make a new child corresponding to that choice
-            new_child = TreeNode(self.env, self.policy, self)
+            new_child = TreeNode(self.env, self.policy, self, action=choice)
             # and play out the policy to see how it does
             reward = new_child.explore()
             self.reward = max(self.reward, reward)
@@ -117,7 +121,7 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
 
         # handle latency_steps, we discard the first n_latency_steps actions
         # to simulate latency
-        action = np_action_dict['action'][:,self.n_latency_steps:]
+        action = np_action_dict['action'][:,n_latency_steps:]
 
         # step env
         obs, reward, done, info = env.step(action)
@@ -125,3 +129,10 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
         past_action = action
     return reward
 
+def run_mcts(env, policy, iters):
+    root = TreeNode(env, policy, None)
+    for _ in range(iters):
+        root.select()
+    child = root.best_child()
+    root.reset_env()
+    return child.action
