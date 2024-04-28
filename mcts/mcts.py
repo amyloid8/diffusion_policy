@@ -1,24 +1,24 @@
 import random
 from diffusion_policy.env.pusht.pushobjects_rel_env import PushObjectsRelativeEnv
+from diffusion_policy.env.pusht.pushobjects_rel_keypoints_env import PushObjectsRelKeypointsEnv
 import numpy as np
 import torch
 from diffusion_policy.common.pytorch_util import dict_apply
 
 class TreeNode:
-    def __init__(self, env, policy, parent, action=None):
+    #policy must be set when the policy is instantiated
+    policy = None
+    def __init__(self, env, parent, action=None):
         self.action = action
         self.env = env
-        self.state = env.state
-        self.unexplored_choices = env.get_blocks_todo()
+        self.state = env.get_state()
+        self.unexplored_choices = self.env.get_blocks_todo()
         self.children = []
         self.parent = parent
-        self.policy = policy
+        self.policy = TreeNode.policy
         self.n_visited = 0
         self.reward = 0
         self.reward_lb = 1
-
-    def reset_env(self):
-        self.env._set_state(self.state)
 
     def select(self):
         # reset state
@@ -129,10 +129,13 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
         past_action = action
     return reward
 
-def run_mcts(env, policy, iters):
-    root = TreeNode(env, policy, None)
+    
+
+def run_mcts(env, iters):
+    root = TreeNode(env, None)
     for _ in range(iters):
         root.select()
     child = root.best_child()
-    root.reset_env()
+    root.env.reset()
+    print(f"switch: {child.action}")
     return child.action

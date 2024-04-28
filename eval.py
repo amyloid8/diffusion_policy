@@ -6,6 +6,7 @@ python eval.py --checkpoint data/image/pusht/diffusion_policy_cnn/train_0/checkp
 import sys
 
 from diffusion_policy.env_runner.push2t_keypoints_runner import Push2TKeypointsRunner
+from mcts.mcts import TreeNode
 # use line-buffering for both stdout and stderr
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 sys.stderr = open(sys.stderr.fileno(), mode='w', buffering=1)
@@ -46,6 +47,7 @@ def main(checkpoint, output_dir, device):
     policy.to(device)
     policy.eval()
     
+    TreeNode.policy = policy
     # run eval
     # cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.push2t_keypoints_runner.Push2TKeypointsRunner"
     cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.pushobjects_rel_keypoints_runner.PushObjectsRelKeypointsRunner"

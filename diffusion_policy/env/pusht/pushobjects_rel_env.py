@@ -34,8 +34,10 @@ class PushObjectsRelativeEnv(gym.Env):
             block_cog=None, damping=None,
             render_action=True,
             render_size=96,
-            reset_to_state=None
+            reset_to_state=None,
+            orchestrator=True
         ):
+        self.orchestrator = orchestrator
         self._seed = None
         self.seed()
         self.window_size = ws = 512  # The size of the PyGame window
@@ -268,6 +270,12 @@ class PushObjectsRelativeEnv(gym.Env):
         self._seed = seed
         self.np_random = np.random.default_rng(seed)
 
+    def get_state(self):
+        out = []
+        for i in range(self.n_blocks):
+            out += self.blocks[i].position + [self.blocks[i].angle]
+        return out
+
     def _handle_collision(self, arbiter, space, data):
         self.n_contact_points += len(arbiter.contact_point_set.points)
 
@@ -395,3 +403,4 @@ class PushObjectsRelativeEnv(gym.Env):
         body.friction = 1
         self.space.add(body, shape1, shape2)
         return body
+

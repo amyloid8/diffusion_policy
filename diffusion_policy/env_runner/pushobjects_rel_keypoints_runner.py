@@ -1,4 +1,4 @@
-from diffusion_policy.env.pusht.pushobjects_rel_keypoints_env import PushObjectsRelKeypointsEnv
+from diffusion_policy.env.pusht.pushobjects_rk_orch import PushObjectsRKOrch
 import wandb
 import numpy as np
 import torch
@@ -51,12 +51,12 @@ class PushObjectsRelKeypointsRunner(BaseLowdimRunner):
         env_n_action_steps = n_action_steps
 
         # assert n_obs_steps <= n_action_steps
-        kp_kwargs = PushObjectsRelKeypointsEnv.genenerate_keypoint_manager_params()
+        kp_kwargs = PushObjectsRKOrch.genenerate_keypoint_manager_params()
 
         def env_fn():
             return MultiStepWrapper(
                 VideoRecordingWrapper(
-                    PushObjectsRelKeypointsEnv(
+                    PushObjectsRKOrch(
                         legacy=legacy_test,
                         keypoint_visible_rate=keypoint_visible_rate,
                         agent_keypoints=agent_keypoints,
