@@ -31,7 +31,7 @@ class PushObjectsRKOrch(PushObjectsRelKeypointsEnv):
     def step(self, action):
         observation, reward, done, info = super().step(action)
         if done:
-            choice = run_mcts(self, 30)
+            choice = run_mcts(self, 2)
             if choice != self.active_idx:
                 self.active_idx = choice
                 done = False

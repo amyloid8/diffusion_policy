@@ -197,7 +197,7 @@ class PushObjectsRelKeypointsRunner(BaseLowdimRunner):
                 leave=False, mininterval=self.tqdm_interval_sec)
             done = False
             while not done:
-                print(f"outer: {obs.shape}")
+                print(f"outer: {obs.shape}, n_envs: {n_envs}")
                 Do = obs.shape[-1] // 2
                 # create obs dict
                 np_obs_dict = {
@@ -226,7 +226,7 @@ class PushObjectsRelKeypointsRunner(BaseLowdimRunner):
                 # handle latency_steps, we discard the first n_latency_steps actions
                 # to simulate latency
                 action = np_action_dict['action'][:,self.n_latency_steps:]
-
+                print(f"outer action shape: {action.shape}")
                 # step env
                 obs, reward, done, info = env.step(action)
                 done = np.all(done)

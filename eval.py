@@ -3,6 +3,7 @@ Usage:
 python eval.py --checkpoint data/image/pusht/diffusion_policy_cnn/train_0/checkpoints/latest.ckpt -o data/pusht_eval_output
 """
 
+from copy import deepcopy
 import sys
 
 from diffusion_policy.env_runner.push2t_keypoints_runner import Push2TKeypointsRunner
@@ -43,11 +44,12 @@ def main(checkpoint, output_dir, device):
     if cfg.training.use_ema:
         policy = workspace.ema_model
     
+    TreeNode.policy = deepcopy(policy)
+    
     device = torch.device(device)
     policy.to(device)
     policy.eval()
     
-    TreeNode.policy = policy
     # run eval
     # cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.push2t_keypoints_runner.Push2TKeypointsRunner"
     cfg.task.env_runner['_target_'] = "diffusion_policy.env_runner.pushobjects_rel_keypoints_runner.PushObjectsRelKeypointsRunner"
