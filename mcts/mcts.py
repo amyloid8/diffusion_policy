@@ -82,6 +82,7 @@ class TreeNode:
 
 
 def simulate(env: PushObjectsRelativeEnv, idx, policy):
+    print("simulate begin")
     env.active_idx = idx
     obs = env._get_obs()
     device = policy.device
@@ -96,29 +97,35 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
     while not done:
         Do = obs.shape[-1] // 2
         # create obs dict
+        print(obs.shape)
         np_obs_dict = {
             # handle n_latency_steps by discarding the last n_latency_steps
             'obs': obs[...,:n_obs_steps,:Do].astype(np.float32),
             'obs_mask': obs[...,:n_obs_steps,Do:] > 0.5
         }
+        print("past action")
         if past_action and (past_action is not None):
             # TODO: not tested
             np_obs_dict['past_action'] = past_action[
                 :,-(n_obs_steps-1):].astype(np.float32)
         
+        print("dict apply")
         # device transfer
         obs_dict = dict_apply(np_obs_dict, 
             lambda x: torch.from_numpy(x).to(
                 device=device))
 
+        print("run policy")
         # run policy
         with torch.no_grad():
             action_dict = policy.predict_action(obs_dict)
 
+        print("dict apply again")
         # device_transfer
         np_action_dict = dict_apply(action_dict,
             lambda x: x.detach().to('cpu').numpy())
 
+        print("latency")
         # handle latency_steps, we discard the first n_latency_steps actions
         # to simulate latency
         action = np_action_dict['action'][:,n_latency_steps:]
@@ -132,7 +139,9 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
     
 
 def run_mcts(env, iters):
+    print("run_mcts")
     root = TreeNode(env, None)
+    print("root created")
     for _ in range(iters):
         root.select()
     child = root.best_child()

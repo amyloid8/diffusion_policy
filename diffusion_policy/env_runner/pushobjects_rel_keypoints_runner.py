@@ -197,6 +197,7 @@ class PushObjectsRelKeypointsRunner(BaseLowdimRunner):
                 leave=False, mininterval=self.tqdm_interval_sec)
             done = False
             while not done:
+                print(f"outer: {obs.shape}")
                 Do = obs.shape[-1] // 2
                 # create obs dict
                 np_obs_dict = {

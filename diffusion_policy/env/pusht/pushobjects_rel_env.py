@@ -273,7 +273,7 @@ class PushObjectsRelativeEnv(gym.Env):
     def get_state(self):
         out = []
         for i in range(self.n_blocks):
-            out += self.blocks[i].position + [self.blocks[i].angle]
+            out += list(self.blocks[i].position) + [self.blocks[i].angle]
         return out
 
     def _handle_collision(self, arbiter, space, data):
