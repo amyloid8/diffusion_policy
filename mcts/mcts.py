@@ -1,4 +1,5 @@
-from multiprocessing import Process
+from multiprocessing import Pipe, Pool, Process
+import multiprocessing as mp
 import random
 from diffusion_policy.env.pusht.pushobjects_rel_env import PushObjectsRelativeEnv
 from diffusion_policy.env.pusht.pushobjects_rel_keypoints_env import PushObjectsRelKeypointsEnv
@@ -9,14 +10,15 @@ from diffusion_policy.common.pytorch_util import dict_apply
 class TreeNode:
     #policy must be set when the policy is instantiated
     policy = None
-    def __init__(self, env, parent, action=None, depth=0):
+    conn = None
+    def __init__(self, env, parent, policy, action=None, depth=0):
         self.action = action
+        self.local_policy=policy
         self.env = env
         self.state = env.get_state()
         self.unexplored_choices = self.env.get_blocks_todo()
         self.children = []
         self.parent = parent
-        self.policy = TreeNode.policy
         self.n_visited = 0
         self.reward = 0
         self.reward_lb = 1
@@ -33,21 +35,21 @@ class TreeNode:
             choice = random.choice(self.unexplored_choices)
             self.unexplored_choices.remove(choice)
             # now make a new child corresponding to that choice
-            new_child = TreeNode(self.env, self, action=choice, depth=self.depth+1)
+            new_child = TreeNode(self.env, self, self.local_policy, action=choice, depth=self.depth+1)
             # and play out the policy to see how it does
             reward = new_child.explore()
             self.reward = max(self.reward, reward)
             self.reward_lb = min(self.reward_lb, reward)
             # backpropagate (using max instead of average)
             self.n_visited += 1
+            self.children += [new_child]
             return self.reward
         else:
-            # return 1 if we have no options left and no children (terminal state)
-            if len(self.children) == 0:
-                return 1
-            
             # choose child with highest UCT score 
             sel_child = self.best_child()
+            print(f"best child = {sel_child}, children = {self.children}")
+            if sel_child is None:
+                return 1
             reward = sel_child.select()
             self.reward = max(self.reward, reward)
             self.reward_lb = min(self.reward_lb, reward)
@@ -63,7 +65,7 @@ class TreeNode:
         while not done and iters < 2:
             new_idx = random.choice(self.env.get_blocks_todo())
             #simulate the choice
-            out = simulate(self.env,new_idx,self.policy)
+            out = simulate(self.env,new_idx,self.local_policy)
             reward = max(reward, out)
             done = len(self.env.get_blocks_todo()) == 0
             iters += 1
@@ -78,29 +80,39 @@ class TreeNode:
         reward = -1
         for child in self.children:
             #from MCTS paper
+            if self.reward == self.reward_lb:
+                if out is None:
+                    child = out
+                continue
             q_value = (child.reward - self.reward_lb) / (self.reward - self.reward_lb) + np.sqrt(np.log(self.n_visited)/child.n_visited)
             if reward < q_value:
                 reward = q_value
                 out = child
         return out
         
-
+# def simulate_proc(env: PushObjectsRelativeEnv, idx, policy):
+#     ctx = mp.get_context('spawn')
+#     p = ctx.Process(target = simulate_raw, args=(env, idx, policy))
+#     p.start()
+#     return p.join()
 
 def simulate(env: PushObjectsRelativeEnv, idx, policy):
     print("simulate begin")
     env.active_idx = idx
     obs = env._get_obs()
-    device = "cpu"
+    device = "cuda:0"
     past_action = None
     n_action_steps=8
     n_latency_steps=0
     n_obs_steps=8
-    policy.reset()
+    # policy.reset()
 
     reward = 0
     done = False
-    while not done:
+    steps = 0
+    while not done and steps < 15:
         Do = obs.shape[-1] // 2
+        steps += 1
         # create obs dict
         obs = np.reshape(obs, (1,1,obs.shape[0]))
         np_obs_dict = {
@@ -136,16 +148,40 @@ def simulate(env: PushObjectsRelativeEnv, idx, policy):
         past_action = action
     return reward
 
-    
+
+def setup_mcts():
+    parent_conn, child_conn = Pipe()
+    ctx = mp.get_context('spawn')
+    process = ctx.Process(target=setup_listener, args=[child_conn, TreeNode.policy])
+    process.start()
+    TreeNode.conn = parent_conn
+
+
+def setup_listener(conn, policy):
+    device = torch.device("cuda:0")
+    policy.to(device)
+    policy.eval()
+    while True:
+        args = conn.recv()
+        args["policy"] = policy
+        out = run_mcts_int(**args)
+        conn.send(out)
 
 def run_mcts(env, iters):
+    TreeNode.conn.send({"state": env.get_state(), "iters": iters})
+
+def run_mcts_int(state, iters, policy):
+    print("run_mcts_int")
+    env = PushObjectsRelKeypointsEnv(reset_to_state=state)
+    env.reset()
     print("run_mcts")
-    root = TreeNode(env, None)
+    root = TreeNode(env, None, policy)
     print("root created")
     for i in range(iters):
         print(f"iteration {i}")
         root.select()
     child = root.best_child()
+    print(root.parent)
     root.env.reset()
     print(f"switch: {child.action}")
     return child.action
